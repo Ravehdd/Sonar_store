@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  django:
+    build:
+      context: ./djsite
+    ports:
+      - "8000:8000"
+    volumes:
+      - static_volume:/code/static
+      - media_volume:/code/media
+volumes:
+  static_volume:
+  media_volume:
