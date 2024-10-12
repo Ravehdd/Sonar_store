@@ -40,7 +40,7 @@ class SelectedCardAPIView(APIView):
         device_id = SelectedCard.objects.all().values("card_id")[0]["card_id"]
         device = Device.objects.filter(id=device_id).values()[0]
         cat = Category.objects.filter(id=device["cat_id"]).values("category")[0]
-        print(cat)
+        # print(cat)
         description = list(Description.objects.filter(device_id=device_id).values("description_paragraph"))
         photo_url = "http://127.0.0.1:8000/media/" + device["photo"]
         device["photo"] = photo_url
@@ -48,14 +48,22 @@ class SelectedCardAPIView(APIView):
         return Response(device)
 
     def post(self, request):
-        serializer = SelectedDeviceSerializer(data=request.data)
-        print(request.data)
-        if serializer.is_valid():
-            devices = SelectedCard.objects.all().delete()
+        # serializer = SelectedDeviceSerializer(data=request.data)
+        # print(request.data)
+        # if serializer.is_valid():
+        devices = SelectedCard.objects.all().delete()
+        if "card_id" in request.data:
             device = SelectedCard.objects.create(card_id=request.data["card_id"])
             device.save()
-            return Response("Success!")
-        return Response("Data is not valid!")
+        elif "name" in request.data:
+            choose_device_id = Device.objects.filter(name__icontains=request.data["name"]).values("id")[0]["id"]
+            device = SelectedCard.objects.create(card_id=choose_device_id)
+            device.save()
+        else:
+            return Response("Something went wrong")
+
+        return Response("Success!")
+        # return Response("Data is not valid!")
 
 
 class AddDescriptionAPIView(APIView):
