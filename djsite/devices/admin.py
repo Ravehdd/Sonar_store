@@ -32,6 +32,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 class DescriptionAdmin(admin.ModelAdmin):
     list_display = ("id", "device", "description_paragraph")
+    list_display_links = ("id", "device", "description_paragraph")
 
 
 admin.site.register(Device, DeviceAdmin)

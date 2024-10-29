@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render
 from django.shortcuts import render
 from django.shortcuts import redirect
@@ -18,7 +19,7 @@ class IndexAPIView(generics.ListAPIView):
 
 class DeviceAPIView(APIView):
     def get(self, request):
-        devices = Device.objects.values()
+        devices = Device.objects.filter(is_published=True).values()
         cats = Category.objects.all().values()
         print(cats)
         devices_data = []
@@ -26,6 +27,7 @@ class DeviceAPIView(APIView):
             for cat in cats:
                 if cat["id"] == device["cat_id"]:
                     device["category"] = cat["category"]
+
             photo_url = "http://127.0.0.1:8000/media/" + device["photo"]
             device["photo"] = photo_url
             description = list(Description.objects.filter(device_id=device["id"]).values("description_paragraph"))
@@ -51,23 +53,29 @@ class SelectedCardAPIView(APIView):
         # serializer = SelectedDeviceSerializer(data=request.data)
         # print(request.data)
         # if serializer.is_valid():
+
         devices = SelectedCard.objects.all().delete()
+        device = "Nothing"
         if "card_id" in request.data:
             device = SelectedCard.objects.create(card_id=request.data["card_id"])
             device.save()
-        elif "name" in request.data:
-            choose_device_id = Device.objects.filter(name__icontains=request.data["name"]).values("id")[0]["id"]
+        elif "device_name" in request.data:
+            print(request.data["device_name"])
+            choose_device_id = Device.objects.filter(Q(name__icontains=request.data["device_name"])).values("id")[0]["id"]
             device = SelectedCard.objects.create(card_id=choose_device_id)
+            print(choose_device_id)
             device.save()
         else:
             return Response("Something went wrong")
 
-        return Response("Success!")
+        return Response("Success")
         # return Response("Data is not valid!")
 
 
 class AddDescriptionAPIView(APIView):
     def post(self, request):
-        Description.objects.create(device=request.data["device"], description_paragraph=request.data["description_paragraph"]).save()
+        print(type(request.data["text"]))
+        for desc in request.data["text"]:
+            Description.objects.create(device_id=request.data["device_id"], description_paragraph=desc).save()
 
-
+        return Response("ok")
